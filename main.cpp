@@ -1,8 +1,12 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <windows.h>
+#include <conio.h>
+#include "console.cpp"
 
-#include <SFML/Graphics.hpp>
+using namespace std;
 
 int main()
 {
+    system("pause");
     return 0;
 }
