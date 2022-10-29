@@ -5,10 +5,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctime>
+#include <fstream>
+
+ofstream fout;
+ifstream fin;
+
+char display[16][60];
+char answer[16][30];
+bool checkRandomBombs[16][30];
+bool checkBlankCell[16][30];
+int Time=0;
 
 using namespace std;
 
 void newGame();
+void loadGame();
 
 void menu() {
     int ptr=1;
@@ -119,12 +130,24 @@ void menu() {
                     system("cls");
                     newGame();
                 }
-                else if (ptr==2) cout << 2;
-                else if (ptr==3) cout << 3;
+                else if (ptr==2) {
+                    system("cls");
+                    loadGame();
+                }
+                else if (ptr==3) {
+                    fin.open("high_score.txt");
+                    int score;
+                    fin >> score;
+                    fin.close();
+                    cout << "HIGHSCORE: " << score << endl;
+                    system("pause");
+                    break;
+                }
                 else if (ptr==4) {
                     system("cls");
                     cout << "THANK YOU FOR PLAYING!" << endl;
                     system("pause");
+                    exit(0);
                     break;
                 }
                 break;
@@ -133,6 +156,7 @@ void menu() {
 }
 
 void play(int height, int width, int bombs);
+void createAnswer(int height, int width, int bombs);
 
 void newGame() {
     int ptr=1;
@@ -247,14 +271,17 @@ void newGame() {
             case KEY_ENTER:
                 if (ptr==1) {
                     system("cls");
+                    createAnswer(9,9,10);
                     play(9,9,10);
                 }
                 else if (ptr==2) {
                     system("cls");
+                    createAnswer(16,16,40);
                     play(16,16,40);
                 }
                 else if (ptr==3) {
                     system("cls");
+                    createAnswer(16,30,99);
                     play(16,30,99);
                 }
                 else if (ptr==4) {
@@ -267,20 +294,16 @@ void newGame() {
                     cin >> width;
                     cout << "Enter bombs (2-400): ";
                     cin >> bombs;
+                    createAnswer(height,width,bombs);
                     play(height,width,bombs);
                 }
-                    break;
+                break;
         }
     }
 }
 
-char display[16][60];
-char answer[16][30];
-bool checkRandomBombs[16][30];
-bool checkBlankCell[16][30];
-
 void createAnswer(int height, int width, int bombs) {
-    int count = 0;
+    int count = 1;
     while (count <= bombs) {
         int i=rand()%height;
         int j=rand()%width;
@@ -307,6 +330,26 @@ void createAnswer(int height, int width, int bombs) {
             else answer[i][j]=count+48;
         }
     }
+    for (int i=0;i<height;i++) {
+        for (int j=0;j<width;j++) {
+            display[i][j*2]='.';
+            display[i][j*2+1]=' ';
+        }
+    }
+    fout.open("answer.txt");
+    fout << '1' << endl;
+    for (int i=0;i<height;i++) {
+        for (int j=0;j<width;j++) {
+            if (answer[i][j]==' ') fout << '*' << endl;
+            else fout << answer[i][j] << endl;
+        }
+    }
+    fout.close();
+    fout.open("height_width.txt");
+    fout << height << endl;
+    fout << width << endl;
+    fout << bombs << endl;
+    fout.close();
 }
 
 clock_t Timer(clock_t time_since_epoch, clock_t now) {
@@ -353,159 +396,306 @@ void openBlankCell(int i, int j, int height, int width) {
 }
 
 void play(int height, int width, int bombs) {
+    SetColor(2);
     srand(time(0));
-    createAnswer(height,width,bombs);
     clock_t time_since_epoch = clock();
-    for (int i=0;i<height;i++) {
-        for (int j=0;j<width;j++) {
-            display[i][j*2]='.';
-            display[i][j*2+1]=' ';
-        }
-    }
+    int countMark=0;
+    int countMarkMatchBombs=0;
     print(height,width,bombs);
-    set_BG_color(0,0,10,'.');
-    set_BG_color(0,1,10,' ');
+    set_BG_color(0,0,10,display[0][0]);
+    set_BG_color(0,1,10,display[0][1]);
     for (int i=0;i<height;i++) {
         cout << endl;
     }
     set_BG_color(height,0,0,' ');
     cout << endl;
-    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-    cout << "Double press X to OPEN" << endl;
-    cout << "Double press Z to MARK" << endl;
+    cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+    cout << "Press X to OPEN" << endl;
+    cout << "Press Z to MARK" << endl;
+    cout << "Press ESC to CLOSE" << endl;
+    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
     Pointer ptr;
     ptr.x=0;
     ptr.y=0;
     while(true) {
-        if (getch()) {
-            switch(getch()) {
-                case KEY_UP: 
-                    ClearScreen();
-                    ptr.x--;
-                    if (ptr.x<0) ptr.x=height-1;
-                    print(height,width,bombs);
-                    set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
-                    set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
+        switch(getch()) {
+            case KEY_UP: 
+                ClearScreen();
+                clrscr();
+                ptr.x--;
+                if (ptr.x<0) ptr.x=height-1;
+                print(height,width,bombs);
+                set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
+                set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
+                for (int i=ptr.x;i<height;i++) {
                     cout << endl;
-                    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                    cout << "Double press X to OPEN" << endl;
-                    cout << "Double press Z to MARK" << endl;
-                    break;
-                case KEY_DOWN: 
-                    ClearScreen();
-                    ptr.x++;
-                    if (ptr.x>height-1) ptr.x=0;
-                    print(height,width,bombs);
-                    set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
-                    set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                cout << "Press X to OPEN" << endl;
+                cout << "Press Z to MARK" << endl;
+                cout << "Press ESC to CLOSE" << endl;
+                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                break;
+            case KEY_DOWN: 
+                ClearScreen();
+                clrscr();
+                ptr.x++;
+                if (ptr.x>height-1) ptr.x=0;
+                print(height,width,bombs);
+                set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
+                set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
+                for (int i=ptr.x;i<height;i++) {
                     cout << endl;
-                    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                    cout << "Double press X to OPEN" << endl;
-                    cout << "Double press Z to MARK" << endl;
-                    break;
-                case KEY_RIGHT: 
-                    ClearScreen();
-                    ptr.y++;
-                    if (ptr.y>width-1) ptr.y=0;
-                    print(height,width,bombs);
-                    set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
-                    set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                cout << "Press X to OPEN" << endl;
+                cout << "Press Z to MARK" << endl;
+                cout << "Press ESC to CLOSE" << endl;
+                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                break;
+            case KEY_RIGHT: 
+                ClearScreen();
+                clrscr();
+                ptr.y++;
+                if (ptr.y>width-1) ptr.y=0;
+                print(height,width,bombs);
+                set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
+                set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
+                for (int i=ptr.x;i<height;i++) {
                     cout << endl;
-                    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                    cout << "Double press X to OPEN" << endl;
-                    cout << "Double press Z to MARK" << endl;
-                    break;
-                case KEY_LEFT:
-                    ClearScreen();
-                    ptr.y--;
-                    if (ptr.y<0) ptr.y=width-1;
-                    print(height,width,bombs);
-                    set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
-                    set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                cout << "Press X to OPEN" << endl;
+                cout << "Press Z to MARK" << endl;
+                cout << "Press ESC to CLOSE" << endl;
+                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                break;
+            case KEY_LEFT:
+                ClearScreen();
+                clrscr();
+                ptr.y--;
+                if (ptr.y<0) ptr.y=width-1;
+                print(height,width,bombs);
+                set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
+                set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
+                for (int i=ptr.x;i<height;i++) {
                     cout << endl;
-                    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                    cout << "Double press X to OPEN" << endl;
-                    cout << "Double press Z to MARK" << endl;
-                    break;
-                case KEY_X:
-                    clrscr();
-                    if (answer[ptr.x][ptr.y]=='B') {
-                        ClearScreen();
-                        for (int i=0;i<height;i++) {
-                            for (int j=0;j<width;j++) {
-                                display[i][j*2]=answer[i][j];
-                            }
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                cout << "Press X to OPEN" << endl;
+                cout << "Press Z to MARK" << endl;
+                cout << "Press ESC to CLOSE" << endl;
+                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                break;
+            case KEY_X:
+                clrscr();
+                if (answer[ptr.x][ptr.y]=='B') {
+                    system("cls");
+                    for (int i=0;i<height;i++) {
+                        for (int j=0;j<width;j++) {
+                            if (answer[i][j]=='B') display[i][j*2]=answer[i][j];
                         }
-                        print(height,width,bombs);
-                        for (int i=ptr.x;i<height;i++) {
-                            cout << endl;
-                        }
-                        set_BG_color(height,0,0,' ');
-                        cout << endl;
-                        cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                        cout << "HCMUS HAS EXPLODED! YOU WILL GET 0 POINT THIS SEMESTER! :)";
-                        SetBGColor(0);
                     }
-                    else if (answer[ptr.x][ptr.y]==' ') {
-                        ClearScreen();
-                        openBlankCell(ptr.x,ptr.y,height,width);
-                        print(height,width,bombs);
-                        for (int i=ptr.x;i<height;i++) {
-                            cout << endl;
-                        }
-                        set_BG_color(height,0,0,' ');
-                        cout << endl;
-                        cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                        cout << "Double Press X to OPEN" << endl;
-                        cout << "Double Press Z to MARK";
-                        SetBGColor(0);
-                    }
-                    else {
-                        ClearScreen();
-                        display[ptr.x][ptr.y*2]=answer[ptr.x][ptr.y];
-                        print(height,width,bombs);
-                        for (int i=ptr.x;i<height;i++) {
-                            cout << endl;
-                        }
-                        set_BG_color(height,0,0,' ');
-                        cout << endl;
-                        cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                        cout << "Double press X to OPEN" << endl;
-                        cout << "Double press Z to MARK";
-                        SetBGColor(0);
-                    }
-                    break;
-                case KEY_Z:
-                    ClearScreen();
-                    display[ptr.x][ptr.y*2]='P';
                     print(height,width,bombs);
                     for (int i=ptr.x;i<height;i++) {
                         cout << endl;
                     }
                     set_BG_color(height,0,0,' ');
                     cout << endl;
+                    cout << "GAME OVER!" << endl;
                     cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
-                    cout << "Double press X to OPEN" << endl;
-                    cout << "Double press Z to MARK";
+                    cout << "HCMUS HAS EXPLODED! YOU WILL GET 0 POINT THIS SEMESTER! :)" << endl;
                     SetBGColor(0);
+                    fout.open("answer.txt");
+                    fout << '0';
+                    fout.close();
+                    system("pause");
+                    exit(0);
                     break;
+                }
+                else if (answer[ptr.x][ptr.y]==' ') {
+                    ClearScreen();
+                    openBlankCell(ptr.x,ptr.y,height,width);
+                    print(height,width,bombs);
+                    for (int i=ptr.x;i<height;i++) {
+                        cout << endl;
+                    }
+                    set_BG_color(height,0,0,' ');
+                    cout << endl;
+                    cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                    cout << "Press X to OPEN" << endl;
+                    cout << "Press Z to MARK" << endl;
+                    cout << "Press ESC to CLOSE" << endl;
+                    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                    SetBGColor(0);
+                }
+                else {
+                    ClearScreen();
+                    display[ptr.x][ptr.y*2]=answer[ptr.x][ptr.y];
+                    print(height,width,bombs);
+                    for (int i=ptr.x;i<height;i++) {
+                        cout << endl;
+                    }
+                    set_BG_color(height,0,0,' ');
+                    cout << endl;
+                    cout << "TIME: " << Time + Timer(time_since_epoch,clock()) << endl;
+                    cout << "Press X to OPEN" << endl;
+                    cout << "Press Z to MARK" << endl;
+                    cout << "Press ESC to CLOSE" << endl;
+                    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+                    SetBGColor(0);
+                }
+                fout.open("display.txt");
+                for (int i=0;i<height;i++) {
+                    for (int j=0;j<width*2;j++) {
+                        if (display[i][j]==' ') fout << '*' << endl;
+                        else fout << display[i][j] << endl;
+                    }
+                }
+                fout.close();
+                break;
+            case KEY_Z:
+                ClearScreen();
+                if (display[ptr.x][ptr.y*2]=='P') {
+                    display[ptr.x][ptr.y*2] = '.';
+                    countMark--;
+                    if (answer[ptr.x][ptr.y]=='B') countMarkMatchBombs--;
+                }
+                else if (display[ptr.x][ptr.y*2]=='.') {
+                    display[ptr.x][ptr.y*2]='P';
+                    countMark++;
+                    if (answer[ptr.x][ptr.y]=='B') countMarkMatchBombs++;
+                }
+                print(height,width,bombs);
+                for (int i=ptr.x;i<height;i++) {
+                    cout << endl;
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "TIME: " << Time + Timer(time_since_epoch,clock()) << endl;
+                cout << "Press X to OPEN" << endl;
+                cout << "Press Z to MARK" << endl;
+                SetBGColor(0);
+                fout.open("display.txt");
+                for (int i=0;i<height;i++) {
+                    for (int j=0;j<width*2;j++) {
+                        if (display[i][j]==' ') fout << '*' << endl;
+                        else fout << display[i][j] << endl;
+                    }
+                }
+                fout.close();
+                break;
+            case KEY_ESC:
+                fout.open("height_width.txt");
+                fout << height << endl;
+                fout << width << endl;
+                fout << bombs << endl;
+                fout << Timer(time_since_epoch,clock()) << endl;
+                fout.close();
+                system("cls");
+                cout << "YOU HAVE EXITED THE GAME! THE GAME HAS BEEN SAVED!" << endl;
+                system("pause");
+                exit(0);
+                break;
+        }
+        fout.open("height_width.txt");
+        fout << height << endl;
+        fout << width << endl;
+        fout << bombs << endl;
+        fout << Timer(time_since_epoch,clock()) << endl;
+        fout.close();
+        if (countMark==bombs && countMarkMatchBombs==bombs) { //winning condition
+            bool checkWin=0;
+            for (int i=0;i<height;i++) {
+                for (int j=0;j<width;j++) {
+                    if (display[i][j*2]=='.') {
+                        checkWin=true;
+                        break;
+                    }
+                }
+                if (checkWin) break;
+            }
+            if (checkWin==false) {
+                system("cls");
+                print(height,width,bombs);
+                for (int i=ptr.x;i<height;i++) {
+                    cout << endl;
+                }
+                set_BG_color(height,0,0,' ');
+                cout << endl;
+                cout << "YOU WIN! YOU WILL GET A+ CS161 THIS SEMESTER!" << endl;
+                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+                int score = (height*width*bombs)/(Time+Timer(time_since_epoch,clock()));
+                cout << "SCORE: " << score <<endl;
+                int max;
+                fin.open("high_score.txt");
+                fin >> max;
+                fin.close();
+                if (max < score) {
+                    fout.open("high_score.txt");
+                    fout << score;
+                    fout.close();
+                }
+                fout.open("answer.txt");
+                fout << '0';
+                fout.close();
+                SetBGColor(0);
+                system("pause");
+                exit(0);
             }
         }
+    }
+}
+
+void loadGame() {
+    int height, width, bombs;
+    fin.open("answer.txt");
+    char temp;
+    fin >> temp;
+    fin.close();
+    if (temp!='1') {
+        fin.close();
+        newGame();
+    }
+    else {
+        fin.open("height_width.txt");
+        int temp1;
+        fin >> temp1;
+        height=temp1;
+        fin >> temp1;
+        width=temp1;
+        fin >> temp1;
+        bombs=temp1;
+        fin >> temp1;
+        Time=temp1;
+        fin.close();
+        fin.open("answer.txt");
+        fin >> temp;
+        for (int i=0;i<height;i++) {
+            for (int j=0;j<width;j++) {
+                fin >> temp;
+                if (temp=='*') answer[i][j]=' ';
+                else answer[i][j]=temp;
+            }
+        }
+        fin.close();
+        fin.open("display.txt");
+        for (int i=0;i<height;i++) {
+            for (int j=0;j<width*2;j++) {
+                fin >> temp;
+                if (temp=='*') display[i][j]=' ';
+                else display[i][j]=temp;
+            }
+        }
+        fin.close();
+        play(height,width,bombs);
     }
 }
