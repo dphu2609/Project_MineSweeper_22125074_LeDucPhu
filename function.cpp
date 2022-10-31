@@ -24,6 +24,8 @@ void newGame();
 void loadGame();
 
 void menu() {
+    system("cls");
+    SetColor(2);
     int ptr=1;
     cout << "WELCOME TO MINESWEEPER" << endl;
     cout << "----------------------" << endl;
@@ -145,12 +147,14 @@ void menu() {
                     loadGame();
                 }
                 else if (ptr==3) {
+                    system("cls");
                     fin.open("high_score.txt");
                     int score;
                     fin >> score;
                     fin.close();
                     cout << "HIGHSCORE: " << score << endl;
                     system("pause");
+                    menu();
                     break;
                 }
                 else if (ptr==4) {
@@ -295,9 +299,10 @@ void newGame() {
                     play(16,30,99);
                 }
                 else if (ptr==4) {
-                    system("cls");
                     SetBGColor(0);
+                    system("cls");
                     int height,width,bombs;
+                    SetBGColor(0);
                     cout << "Enter height (2-16): ";
                     cin >> height;
                     cout << "Enter width (2-30): ";
@@ -422,8 +427,6 @@ void play(int height, int width, int bombs) {
     cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
     cout << "Press X to OPEN" << endl;
     cout << "Press Z to MARK" << endl;
-    cout << "Press ESC to CLOSE" << endl;
-    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
     Pointer ptr;
     ptr.x=0;
     ptr.y=0;
@@ -452,8 +455,6 @@ void play(int height, int width, int bombs) {
             cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
             cout << "Press X to OPEN" << endl;
             cout << "Press Z to MARK" << endl;
-            cout << "Press ESC to CLOSE" << endl;
-            cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
         }
         auto Key = getch();
         switch(Key) {
@@ -465,16 +466,6 @@ void play(int height, int width, int bombs) {
                 print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                for (int i=ptr.x;i<height;i++) {
-                    cout << endl;
-                }
-                set_BG_color(height,0,0,' ');
-                cout << endl;
-                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                cout << "Press X to OPEN" << endl;
-                cout << "Press Z to MARK" << endl;
-                cout << "Press ESC to CLOSE" << endl;
-                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
                 break;
             case KEY_DOWN: 
                 ClearScreen();
@@ -484,16 +475,6 @@ void play(int height, int width, int bombs) {
                 print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                for (int i=ptr.x;i<height;i++) {
-                    cout << endl;
-                }
-                set_BG_color(height,0,0,' ');
-                cout << endl;
-                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                cout << "Press X to OPEN" << endl;
-                cout << "Press Z to MARK" << endl;
-                cout << "Press ESC to CLOSE" << endl;
-                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
                 break;
             case KEY_RIGHT: 
                 ClearScreen();
@@ -503,16 +484,6 @@ void play(int height, int width, int bombs) {
                 print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                for (int i=ptr.x;i<height;i++) {
-                    cout << endl;
-                }
-                set_BG_color(height,0,0,' ');
-                cout << endl;
-                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                cout << "Press X to OPEN" << endl;
-                cout << "Press Z to MARK" << endl;
-                cout << "Press ESC to CLOSE" << endl;
-                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
                 break;
             case KEY_LEFT:
                 ClearScreen();
@@ -522,18 +493,9 @@ void play(int height, int width, int bombs) {
                 print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-                for (int i=ptr.x;i<height;i++) {
-                    cout << endl;
-                }
-                set_BG_color(height,0,0,' ');
-                cout << endl;
-                cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                cout << "Press X to OPEN" << endl;
-                cout << "Press Z to MARK" << endl;
-                cout << "Press ESC to CLOSE" << endl;
-                cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
                 break;
             case KEY_X:
+                ClearScreen();
                 clrscr();
                 if (answer[ptr.x][ptr.y]=='B') {
                     system("cls");
@@ -556,40 +518,18 @@ void play(int height, int width, int bombs) {
                     fout << '0';
                     fout.close();
                     system("pause");
-                    exit(0);
+                    menu();
                     break;
                 }
                 else if (answer[ptr.x][ptr.y]==' ') {
                     ClearScreen();
                     openBlankCell(ptr.x,ptr.y,height,width);
                     print(height,width,bombs);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
-                    cout << endl;
-                    cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                    cout << "Press X to OPEN" << endl;
-                    cout << "Press Z to MARK" << endl;
-                    cout << "Press ESC to CLOSE" << endl;
-                    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
-                    SetBGColor(0);
                 }
                 else {
                     ClearScreen();
                     display[ptr.x][ptr.y*2]=answer[ptr.x][ptr.y];
                     print(height,width,bombs);
-                    for (int i=ptr.x;i<height;i++) {
-                        cout << endl;
-                    }
-                    set_BG_color(height,0,0,' ');
-                    cout << endl;
-                    cout << "TIME: " << Time + Timer(time_since_epoch,clock()) << endl;
-                    cout << "Press X to OPEN" << endl;
-                    cout << "Press Z to MARK" << endl;
-                    cout << "Press ESC to CLOSE" << endl;
-                    cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
-                    SetBGColor(0);
                 }
                 fout.open("display.txt");
                 for (int i=0;i<height;i++) {
@@ -602,6 +542,7 @@ void play(int height, int width, int bombs) {
                 break;
             case KEY_Z:
                 ClearScreen();
+                clrscr();
                 if (display[ptr.x][ptr.y*2]=='P') {
                     display[ptr.x][ptr.y*2] = '.';
                     countMark--;
@@ -613,15 +554,6 @@ void play(int height, int width, int bombs) {
                     if (answer[ptr.x][ptr.y]=='B') countMarkMatchBombs++;
                 }
                 print(height,width,bombs);
-                for (int i=ptr.x;i<height;i++) {
-                    cout << endl;
-                }
-                set_BG_color(height,0,0,' ');
-                cout << endl;
-                cout << "TIME: " << Time + Timer(time_since_epoch,clock()) << endl;
-                cout << "Press X to OPEN" << endl;
-                cout << "Press Z to MARK" << endl;
-                SetBGColor(0);
                 fout.open("display.txt");
                 for (int i=0;i<height;i++) {
                     for (int j=0;j<width*2;j++) {
@@ -644,6 +576,15 @@ void play(int height, int width, int bombs) {
                 exit(0);
                 break;
         }
+        for (int i=ptr.x;i<height;i++) {
+            cout << endl;
+        }
+        set_BG_color(height,0,0,' ');
+        cout << endl;
+        cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+        cout << "Press X to OPEN" << endl;
+        cout << "Press Z to MARK" << endl;
+        SetBGColor(0);
         fout.open("height_width.txt");
         fout << height << endl;
         fout << width << endl;
@@ -655,13 +596,13 @@ void play(int height, int width, int bombs) {
             for (int i=0;i<height;i++) {
                 for (int j=0;j<width;j++) {
                     if (display[i][j*2]=='.') {
-                        checkWin=true;
+                        checkWin=1;
                         break;
                     }
                 }
                 if (checkWin) break;
             }
-            if (checkWin==false) {
+            if (checkWin==0) {
                 system("cls");
                 print(height,width,bombs);
                 for (int i=ptr.x;i<height;i++) {
@@ -687,7 +628,7 @@ void play(int height, int width, int bombs) {
                 fout.close();
                 SetBGColor(0);
                 system("pause");
-                exit(0);
+                menu();
             }
         }
     }
