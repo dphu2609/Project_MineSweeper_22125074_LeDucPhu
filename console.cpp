@@ -90,3 +90,5 @@ void NoCursorType()
 	Info.dwSize = 20;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
 }
+
+

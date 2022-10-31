@@ -7,6 +7,8 @@
 #include <ctime>
 #include <fstream>
 
+using namespace std;
+
 ofstream fout;
 ifstream fin;
 
@@ -40,6 +42,7 @@ void menu() {
                 ptr++;
                 if (ptr>4) ptr=1;
                 if (ptr==1) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     SetBGColor(14);
@@ -50,6 +53,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==2) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -60,6 +64,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==3) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -70,6 +75,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==4) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -85,6 +91,7 @@ void menu() {
                 ptr--;
                 if (ptr<1) ptr=4;
                 if (ptr==1) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     SetBGColor(14);
@@ -95,6 +102,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==2) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -105,6 +113,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==3) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -115,6 +124,7 @@ void menu() {
                     cout << "EXIT" << endl;
                 }
                 else if (ptr==4) {
+                    SetBGColor(0);
                     cout << "WELCOME TO MINESWEEPER" << endl;
                     cout << "----------------------" << endl;
                     cout << "NEW GAME" << endl;
@@ -418,7 +428,35 @@ void play(int height, int width, int bombs) {
     ptr.x=0;
     ptr.y=0;
     while(true) {
-        switch(getch()) {
+        int checkpoint = Time+Timer(time_since_epoch,clock());
+        while (!kbhit()) 
+        {
+            int Sec = Time+Timer(time_since_epoch,clock());
+            if (Sec == checkpoint) continue;
+            checkpoint = Sec;
+            fout.open("height_width.txt");
+            fout << height << endl;
+            fout << width << endl;
+            fout << bombs << endl;
+            fout << checkpoint;
+            fout.close();
+            clrscr();
+            print(height,width,bombs);
+            set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
+            set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
+            for (int i=ptr.x;i<height;i++) {
+                cout << endl;
+            }
+            set_BG_color(height,0,0,' ');
+            cout << endl;
+            cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
+            cout << "Press X to OPEN" << endl;
+            cout << "Press Z to MARK" << endl;
+            cout << "Press ESC to CLOSE" << endl;
+            cout << "Please only use ESC to EXIT or your game will NOT BE SAVED!" << endl;
+        }
+        auto Key = getch();
+        switch(Key) {
             case KEY_UP: 
                 ClearScreen();
                 clrscr();
@@ -667,15 +705,10 @@ void loadGame() {
     }
     else {
         fin.open("height_width.txt");
-        int temp1;
-        fin >> temp1;
-        height=temp1;
-        fin >> temp1;
-        width=temp1;
-        fin >> temp1;
-        bombs=temp1;
-        fin >> temp1;
-        Time=temp1;
+        fin >> height;
+        fin >> width;
+        fin >> bombs;
+        fin >> Time;
         fin.close();
         fin.open("answer.txt");
         fin >> temp;
