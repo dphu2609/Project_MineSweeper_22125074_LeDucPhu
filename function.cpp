@@ -14,8 +14,8 @@ ifstream fin;
 
 char display[16][60];
 char answer[16][30];
-bool checkRandomBombs[16][30];
 bool checkBlankCell[16][30];
+bool checkRandomBombs[16][30];
 int Time=0;
 
 using namespace std;
@@ -27,6 +27,7 @@ void menu() {
     system("cls");
     SetColor(2);
     int ptr=1;
+    cout << endl;
     cout << "WELCOME TO MINESWEEPER" << endl;
     cout << "----------------------" << endl;
     SetBGColor(14);
@@ -35,9 +36,9 @@ void menu() {
     cout << "CONTINUE PLAYING" << endl;
     cout << "HIGHSCORE" << endl;
     cout << "EXIT" << endl;
-    _getch();
     while(true) {
         ClearScreen();
+        cout << endl;
         switch(getch()) {
             case KEY_DOWN:
                 clrscr();
@@ -148,12 +149,35 @@ void menu() {
                 }
                 else if (ptr==3) {
                     system("cls");
-                    fin.open("high_score.txt");
-                    int score;
-                    fin >> score;
+                    int highscore[5];
+                    fin.open("high_score_beginer.txt");
+                    for (int i=0;i<5;i++) {
+                        fin >> highscore[i];
+                    }
                     fin.close();
-                    cout << "HIGHSCORE: " << score << endl;
-                    system("pause");
+                    cout << "TOP 5 of BEGINER: " << endl;
+                    for (int i=0;i<5;i++) {
+                        cout << highscore[i] << endl;
+                    }
+                    fin.open("high_score_intermidiate.txt");
+                    for (int i=0;i<5;i++) {
+                        fin >> highscore[i];
+                    }
+                    fin.close();
+                    cout << "TOP 5 of INTERMIDIATE: " << endl;
+                    for (int i=0;i<5;i++) {
+                        cout << highscore[i] << endl;
+                    }
+                    fin.open("high_score_EXPERT.txt");
+                    for (int i=0;i<5;i++) {
+                        fin >> highscore[i];
+                    }
+                    fin.close();
+                    cout << "TOP 5 of EXPERT: " << endl;
+                    for (int i=0;i<5;i++) {
+                        cout << highscore[i] << endl;
+                    }
+                    getch();
                     menu();
                     break;
                 }
@@ -173,6 +197,7 @@ void play(int height, int width, int bombs);
 void createAnswer(int height, int width, int bombs);
 
 void newGame() {
+    system("cls");
     int ptr=1;
     cout << "CHOOSE DIFFICULTY" << endl;
     cout << "-----------------" << endl;
@@ -309,8 +334,15 @@ void newGame() {
                     cin >> width;
                     cout << "Enter bombs (2-400): ";
                     cin >> bombs;
-                    createAnswer(height,width,bombs);
-                    play(height,width,bombs);
+                    if (height<2 || height>16 || width<2 || width >30 || bombs>height*width) {
+                        cout << "INVALID VALUE! PLEASE TRY AGAIN" << endl;
+                        getch();
+                        newGame();
+                    }
+                    else {
+                        createAnswer(height,width,bombs);
+                        play(height,width,bombs);
+                    }
                 }
                 break;
         }
@@ -318,6 +350,14 @@ void newGame() {
 }
 
 void createAnswer(int height, int width, int bombs) {
+    srand(time(0));
+    for (int i=0;i<height;i++) {
+        for (int j=0;j<width;j++) {
+            checkRandomBombs[i][j]=false;
+            answer[i][j]=' ';
+            checkBlankCell[i][j]=false;
+        }
+    }
     int count = 1;
     while (count <= bombs) {
         int i=rand()%height;
@@ -364,6 +404,9 @@ void createAnswer(int height, int width, int bombs) {
     fout << height << endl;
     fout << width << endl;
     fout << bombs << endl;
+    fout << 0 << endl;
+    fout << 0 << endl;
+    fout << 0 << endl;
     fout.close();
 }
 
@@ -379,8 +422,14 @@ struct Pointer {
 void print(int height, int width, int bombs) {
     for (int i=0;i<height;i++) {
         for (int j=0;j<width;j++) {
-            set_BG_color(i,j*2,7,display[i][j*2]);
-            set_BG_color(i,j*2+1,7,display[i][j*2+1]);
+            if (display[i][j*2]=='P') {
+                set_BG_color(i,j*2,14,display[i][j*2]);
+                set_BG_color(i,j*2+1,14,display[i][j*2+1]);
+            }
+            else {
+                set_BG_color(i,j*2,7,display[i][j*2]);
+                set_BG_color(i,j*2+1,7,display[i][j*2+1]);
+            }
         }
     }
 }
@@ -393,6 +442,8 @@ void openBlankCell(int i, int j, int height, int width) {
         display[i-1][(j+1)*2]=answer[i-1][j+1];
         display[i][(j-1)*2]=answer[i][j-1];
         display[i][j*2]=answer[i][j];
+        set_BG_color(i,j*2,7,display[i][j*2]);
+        set_BG_color(i,j*2+1,7,display[i][j*2+1]);
         display[i][(j+1)*2]=answer[i][j+1];
         display[i+1][(j-1)*2]=answer[i+1][j-1];
         display[i+1][j*2]=answer[i+1][j];
@@ -405,23 +456,34 @@ void openBlankCell(int i, int j, int height, int width) {
         openBlankCell(i-1,j-1,height,width);
         openBlankCell(i-1,j+1,height,width);
         openBlankCell(i+1,j-1,height,width);
-        openBlankCell(i+1,j-1,height,width);
+        openBlankCell(i+1,j+1,height,width);
     }   
-    else return;
+    else if (answer[i][j]=='B') return;
+    else  {
+        set_BG_color(i,j*2,7,display[i][j*2]);
+        set_BG_color(i,j*2+1,7,display[i][j*2+1]);
+        return;
+    }
 }
 
 void play(int height, int width, int bombs) {
+    int countMark;
+    int countMarkMatchBombs;
+    fin.open("height_width.txt");
+    fin >> Time;
+    fin >> Time;
+    fin >> Time;
+    fin >> Time;
+    fin >> countMark;
+    fin >> countMarkMatchBombs;
+    fin.close();
+    NoCursorType();
     SetColor(2);
-    srand(time(0));
     clock_t time_since_epoch = clock();
-    int countMark=0;
-    int countMarkMatchBombs=0;
     print(height,width,bombs);
     set_BG_color(0,0,10,display[0][0]);
     set_BG_color(0,1,10,display[0][1]);
-    for (int i=0;i<height;i++) {
-        cout << endl;
-    }
+    set_BG_color(0,width*2,0,' ');
     set_BG_color(height,0,0,' ');
     cout << endl;
     cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
@@ -441,15 +503,13 @@ void play(int height, int width, int bombs) {
             fout << height << endl;
             fout << width << endl;
             fout << bombs << endl;
-            fout << checkpoint;
+            fout << checkpoint << endl;
+            fout << countMark << endl;
+            fout << countMarkMatchBombs;
             fout.close();
-            clrscr();
-            print(height,width,bombs);
-            set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
-            set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
-            for (int i=ptr.x;i<height;i++) {
-                cout << endl;
-            }
+            // for (int i=0;i<height;i++) {
+            //     cout << endl;
+            // }
             set_BG_color(height,0,0,' ');
             cout << endl;
             cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
@@ -458,45 +518,63 @@ void play(int height, int width, int bombs) {
         }
         auto Key = getch();
         switch(Key) {
-            case KEY_UP: 
-                ClearScreen();
-                clrscr();
+            case KEY_UP:    
+                if (display[ptr.x][ptr.y*2]=='P') {
+                    set_BG_color(ptr.x,ptr.y*2,14,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,14,display[ptr.x][ptr.y*2+1]);
+                }
+                else {
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
+                }
                 ptr.x--;
                 if (ptr.x<0) ptr.x=height-1;
-                print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
                 break;
             case KEY_DOWN: 
-                ClearScreen();
-                clrscr();
+                if (display[ptr.x][ptr.y*2]=='P') {
+                    set_BG_color(ptr.x,ptr.y*2,14,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,14,display[ptr.x][ptr.y*2+1]);
+                }
+                else {
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
+                }
                 ptr.x++;
                 if (ptr.x>height-1) ptr.x=0;
-                print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
                 break;
             case KEY_RIGHT: 
-                ClearScreen();
-                clrscr();
+                if (display[ptr.x][ptr.y*2]=='P') {
+                    set_BG_color(ptr.x,ptr.y*2,14,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,14,display[ptr.x][ptr.y*2+1]);
+                }
+                else {
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
+                }
                 ptr.y++;
                 if (ptr.y>width-1) ptr.y=0;
-                print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
                 break;
             case KEY_LEFT:
-                ClearScreen();
-                clrscr();
+                if (display[ptr.x][ptr.y*2]=='P') {
+                    set_BG_color(ptr.x,ptr.y*2,14,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,14,display[ptr.x][ptr.y*2+1]);
+                }
+                else {
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
+                }
                 ptr.y--;
                 if (ptr.y<0) ptr.y=width-1;
-                print(height,width,bombs);
                 set_BG_color(ptr.x,ptr.y*2,10,display[ptr.x][ptr.y*2]);
                 set_BG_color(ptr.x,ptr.y*2+1,10,display[ptr.x][ptr.y*2+1]);
                 break;
             case KEY_X:
-                ClearScreen();
-                clrscr();
                 if (answer[ptr.x][ptr.y]=='B') {
                     system("cls");
                     for (int i=0;i<height;i++) {
@@ -511,7 +589,7 @@ void play(int height, int width, int bombs) {
                     set_BG_color(height,0,0,' ');
                     cout << endl;
                     cout << "GAME OVER!" << endl;
-                    cout << "TIME: " << Timer(time_since_epoch,clock()) << endl;
+                    cout << "TIME: " << Time + Timer(time_since_epoch,clock()) << endl;
                     cout << "HCMUS HAS EXPLODED! YOU WILL GET 0 POINT THIS SEMESTER! :)" << endl;
                     SetBGColor(0);
                     fout.open("answer.txt");
@@ -519,17 +597,12 @@ void play(int height, int width, int bombs) {
                     fout.close();
                     system("pause");
                     menu();
-                    break;
                 }
-                else if (answer[ptr.x][ptr.y]==' ') {
-                    ClearScreen();
-                    openBlankCell(ptr.x,ptr.y,height,width);
-                    print(height,width,bombs);
-                }
+                else if (answer[ptr.x][ptr.y]==' ') openBlankCell(ptr.x,ptr.y,height,width);
                 else {
-                    ClearScreen();
                     display[ptr.x][ptr.y*2]=answer[ptr.x][ptr.y];
-                    print(height,width,bombs);
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
                 }
                 fout.open("display.txt");
                 for (int i=0;i<height;i++) {
@@ -541,19 +614,20 @@ void play(int height, int width, int bombs) {
                 fout.close();
                 break;
             case KEY_Z:
-                ClearScreen();
-                clrscr();
                 if (display[ptr.x][ptr.y*2]=='P') {
                     display[ptr.x][ptr.y*2] = '.';
                     countMark--;
                     if (answer[ptr.x][ptr.y]=='B') countMarkMatchBombs--;
+                    set_BG_color(ptr.x,ptr.y*2,7,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,7,display[ptr.x][ptr.y*2+1]);
                 }
                 else if (display[ptr.x][ptr.y*2]=='.') {
                     display[ptr.x][ptr.y*2]='P';
                     countMark++;
                     if (answer[ptr.x][ptr.y]=='B') countMarkMatchBombs++;
+                    set_BG_color(ptr.x,ptr.y*2,14,display[ptr.x][ptr.y*2]);
+                    set_BG_color(ptr.x,ptr.y*2+1,14,display[ptr.x][ptr.y*2+1]);
                 }
-                print(height,width,bombs);
                 fout.open("display.txt");
                 for (int i=0;i<height;i++) {
                     for (int j=0;j<width*2;j++) {
@@ -562,13 +636,23 @@ void play(int height, int width, int bombs) {
                     }
                 }
                 fout.close();
+                fout.open("height_width.txt");
+                fout << height << endl;
+                fout << width << endl;
+                fout << bombs << endl;
+                fout << Time + Timer(time_since_epoch,clock()) << endl;
+                fout << countMark << endl;
+                fout << countMarkMatchBombs << endl;
+                fout.close();
                 break;
             case KEY_ESC:
                 fout.open("height_width.txt");
                 fout << height << endl;
                 fout << width << endl;
                 fout << bombs << endl;
-                fout << Timer(time_since_epoch,clock()) << endl;
+                fout << Time + Timer(time_since_epoch,clock()) << endl;
+                fout << countMark << endl;
+                fout << countMarkMatchBombs;
                 fout.close();
                 system("cls");
                 cout << "YOU HAVE EXITED THE GAME! THE GAME HAS BEEN SAVED!" << endl;
@@ -576,21 +660,12 @@ void play(int height, int width, int bombs) {
                 exit(0);
                 break;
         }
-        for (int i=ptr.x;i<height;i++) {
-            cout << endl;
-        }
         set_BG_color(height,0,0,' ');
         cout << endl;
         cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
         cout << "Press X to OPEN" << endl;
         cout << "Press Z to MARK" << endl;
         SetBGColor(0);
-        fout.open("height_width.txt");
-        fout << height << endl;
-        fout << width << endl;
-        fout << bombs << endl;
-        fout << Timer(time_since_epoch,clock()) << endl;
-        fout.close();
         if (countMark==bombs && countMarkMatchBombs==bombs) { //winning condition
             bool checkWin=0;
             for (int i=0;i<height;i++) {
@@ -612,17 +687,33 @@ void play(int height, int width, int bombs) {
                 cout << endl;
                 cout << "YOU WIN! YOU WILL GET A+ CS161 THIS SEMESTER!" << endl;
                 cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
-                int score = (height*width*bombs)/(Time+Timer(time_since_epoch,clock()));
-                cout << "SCORE: " << score <<endl;
-                int max;
-                fin.open("high_score.txt");
-                fin >> max;
-                fin.close();
-                if (max < score) {
-                    fout.open("high_score.txt");
-                    fout << score;
-                    fout.close();
+                int score = Time+Timer(time_since_epoch,clock()) ;
+                int highscore[5];
+                if (height==9 && width==9 && bombs==10) fin.open("high_score_beginer.txt");
+                else if (height==16 && width==16 && bombs==40) fin.open("high_score_intermidiate.txt");
+                else if (height==16 && width==30 && bombs==99) fin.open("high_score_expert.txt");
+                for (int i=0;i<5;i++) {
+                    fin >> highscore[i];
                 }
+                fin.close();
+                int index=5;
+                for (int i=0;i<5;i++) {
+                    if (score<highscore[i]) {
+                        index=i;
+                        break;
+                    }
+                }
+                for (int i=4;i>index;i--) {
+                    highscore[i]=highscore[i-1];
+                }
+                highscore[index]=score;
+                if (height==9 && width==9 && bombs==10) fout.open("high_score_beginer.txt");
+                else if (height==16 && width==16 && bombs==40) fout.open("high_score_intermidiate.txt");
+                else if (height==16 && width==30 && bombs==99) fout.open("high_score_expert.txt");
+                for (int i=0;i<5;i++) {
+                    fout << highscore[i] << endl;
+                }
+                fout.close();
                 fout.open("answer.txt");
                 fout << '0';
                 fout.close();
@@ -649,7 +740,6 @@ void loadGame() {
         fin >> height;
         fin >> width;
         fin >> bombs;
-        fin >> Time;
         fin.close();
         fin.open("answer.txt");
         fin >> temp;
