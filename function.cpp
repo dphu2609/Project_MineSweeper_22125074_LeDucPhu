@@ -351,11 +351,13 @@ void newGame() {
 
 void createAnswer(int height, int width, int bombs) {
     srand(time(0));
-    for (int i=0;i<height;i++) {
-        for (int j=0;j<width;j++) {
+    for (int i=0;i<16;i++) {
+        for (int j=0;j<30;j++) {
             checkRandomBombs[i][j]=false;
             answer[i][j]=' ';
             checkBlankCell[i][j]=false;
+            display[i][j*2]='.';
+            display[i][j*2+1]=' ';
         }
     }
     int count = 1;
@@ -383,12 +385,6 @@ void createAnswer(int height, int width, int bombs) {
             if (answer[i+1][j+1]=='B') count++;
             if (count==0) answer[i][j]=' ';
             else answer[i][j]=count+48;
-        }
-    }
-    for (int i=0;i<height;i++) {
-        for (int j=0;j<width;j++) {
-            display[i][j*2]='.';
-            display[i][j*2+1]=' ';
         }
     }
     fout.open("answer.txt");
@@ -507,9 +503,6 @@ void play(int height, int width, int bombs) {
             fout << countMark << endl;
             fout << countMarkMatchBombs;
             fout.close();
-            // for (int i=0;i<height;i++) {
-            //     cout << endl;
-            // }
             set_BG_color(height,0,0,' ');
             cout << endl;
             cout << "TIME: " << Time+Timer(time_since_epoch,clock()) << endl;
